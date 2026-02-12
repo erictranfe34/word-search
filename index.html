@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Search Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 15px;
+        }
+
+        input[type="text"], 
+        input[type="number"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #ffffff;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, 
+        input[type="number"]:focus, 
+        textarea:focus, 
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f7fafc;
+        }
+
+        input[type="file"]:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        input[type="range"] {
+            width: calc(100% - 80px);
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+            margin-right: 12px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        small {
+            display: block;
+            margin-top: 6px;
+            color: #718096;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .preview-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .preview-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 24px;
+            color: #1a202c;
+            font-weight: 700;
+        }
+
+        .canvas-container {
+            text-align: center;
+            margin: 24px 0;
+            padding: 24px;
+            background: #f7fafc;
+            border-radius: 16px;
+        }
+
+        canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border-left: 4px solid #c53030;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border-left: 4px solid #2f855a;
+            font-weight: 500;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .collapsible {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            color: #667eea;
+        }
+
+        .collapsible-content {
+            margin-top: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 24px;
+            }
+            
+            .download-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-secondary {
+                margin: 4px 0;
+                width: 100%;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 6px;
+            cursor: help;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #2d3748;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>🔍 Word Search Generator</h1>
+                <p>Create custom word search puzzles and download as PPTX, PDF, or JPEG</p>
+            </div>
+
+            <div class="content">
+                <div class="input-section">
+                    <h3 class="section-title">📝 Basic Settings</h3>
+                    
+                    <div class="input-group">
+                        <label>Puzzle Title</label>
+                        <input type="text" id="puzzleTitle" placeholder="e.g., Animals, Countries, Science Terms" value="Word Search">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Enter Words (one per line)</label>
+                        <textarea id="wordInput" placeholder="CAT&#10;DOG&#10;BIRD&#10;FISH&#10;LION"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="input-group">
+                            <label>Number of Rows</label>
+                            <input type="number" id="rows" min="10" max="30" value="15">
+                        </div>
+                        <div class="input-group">
+                            <label>Number of Columns</label>
+                            <input type="number" id="cols" min="10" max="30" value="15">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Page Size</label>
+                        <select id="pageSize">
+                            <option value="letter">8.5 x 11 inches (Letter)</option>
+                            <option value="custom">6 x 9 inches (Custom)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="toggleSection('fontSettings')">
+                        <span>🎨 Font & Typography <span class="badge">Advanced</span></span>
+                        <span id="fontSettingsIcon">▼</span>
+                    </div>
+                    <div id="fontSettings" class="collapsible-content">
+                        <div class="row">
+                            <div class="input-group">
+                                <label>Title Font Size (px)</label>
+                                <input type="number" id="titleFontSize" min="20" max="60" value="34">
+                            </div>
+                            <div class="input-group">
+                                <label>Title Font Family</label>
+                                <select id="titleFontFamily">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Comic Sans MS">Comic Sans MS</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Trebuchet MS">Trebuchet MS</option>
+                                    <option value="CustomTitle">Custom Font (Upload Below)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Custom Title Font (TTF/OTF) - Optional</label>
+                            <input type="file" id="customTitleFont" accept=".ttf,.otf">
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <label>Subtitle Font Size (px)</label>
+                                <input type="number" id="subtitleFontSize" min="14" max="40" value="24">
+                            </div>
+                            <div class="input-group">
+                                <label>Subtitle Font Family</label>
+                                <select id="subtitleFontFamily">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Comic Sans MS">Comic Sans MS</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Trebuchet MS">Trebuchet MS</option>
+                                    <option value="CustomSubtitle">Custom Font (Upload Below)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Custom Subtitle Font (TTF/OTF) - Optional</label>
+                            <input type="file" id="customSubtitleFont" accept=".ttf,.otf">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="toggleSection('styleSettings')">
+                        <span>🖼️ Background & Styling <span class="badge">Advanced</span></span>
+                        <span id="styleSettingsIcon">▼</span>
+                    </div>
+                    <div id="styleSettings" class="collapsible-content">
+                        <div class="input-group">
+                            <label>Background Image (optional)</label>
+                            <input type="file" id="backgroundImage" accept="image/*">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Background Image Opacity (0-100%)</label>
+                            <input type="range" id="bgOpacity" min="0" max="100" value="15" oninput="document.getElementById('opacityValue').textContent = this.value + '%'">
+                            <span id="opacityValue" style="font-weight: bold; color: #667eea;">15%</span>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <label>Word List Column Gap (px)</label>
+                                <input type="number" id="wordColumnGap" value="18">
+                                <small>Horizontal spacing between words (can be negative)</small>
+                            </div>
+                            <div class="input-group">
+                                <label>Word List Row Gap (px)</label>
+                                <input type="number" id="wordRowGap" value="10">
+                                <small>Vertical spacing between word rows (can be negative)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="generatePuzzle()">✨ Generate Word Search</button>
+
+                <div id="message"></div>
+
+                <div id="previewSection" class="preview-section hidden">
+                    <h2>Preview</h2>
+                    <div class="canvas-container">
+                        <canvas id="puzzleCanvas"></canvas>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="solutionCanvas"></canvas>
+                    </div>
+                    
+                    <div class="download-buttons">
+                        <button class="btn btn-secondary" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-secondary" onclick="downloadJPEG()">🖼️ Download JPEG</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPuzzle = null;
+        let currentWords = [];
+        let wordPositions = [];
+        let backgroundImage = null;
+        let customTitleFontLoaded = false;
+        let customSubtitleFontLoaded = false;
+
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const icon = document.getElementById(sectionId + 'Icon');
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                icon.textContent = '▼';
+            } else {
+                section.style.display = 'none';
+                icon.textContent = '▶';
+            }
+        }
+
+        function showMessage(message, type = 'error') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => messageDiv.classList.add('hidden'), 5000);
+        }
+
+        async function generatePuzzle() {
+            const title = document.getElementById('puzzleTitle').value.trim();
+            const wordInput = document.getElementById('wordInput').value.trim();
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const titleFontSize = parseInt(document.getElementById('titleFontSize').value);
+            const subtitleFontSize = parseInt(document.getElementById('subtitleFontSize').value);
+            const titleFontFamily = document.getElementById('titleFontFamily').value;
+            const subtitleFontFamily = document.getElementById('subtitleFontFamily').value;
+            const bgOpacity = parseInt(document.getElementById('bgOpacity').value) / 100;
+            const wordColumnGap = parseInt(document.getElementById('wordColumnGap').value);
+            const wordRowGap = parseInt(document.getElementById('wordRowGap').value);
+            const bgImageFile = document.getElementById('backgroundImage').files[0];
+            const customTitleFontFile = document.getElementById('customTitleFont').files[0];
+            const customSubtitleFontFile = document.getElementById('customSubtitleFont').files[0];
+
+            if (!wordInput) {
+                showMessage('Please enter at least one word!');
+                return;
+            }
+
+            const words = wordInput.split('\n')
+                .map(w => w.trim().toUpperCase())
+                .filter(w => w.length > 0 && /^[A-Z]+$/.test(w));
+
+            if (words.length === 0) {
+                showMessage('Please enter valid words (letters only)!');
+                return;
+            }
+
+            const maxWordLength = Math.max(...words.map(w => w.length));
+            if (maxWordLength > Math.max(rows, cols)) {
+                showMessage(`Grid too small! Longest word is ${maxWordLength} letters. Increase grid size.`);
+                return;
+            }
+
+            currentWords = words;
+            const grid = createWordSearchGrid(words, rows, cols);
+            
+            if (!grid) {
+                showMessage('Could not fit all words! Try a larger grid or fewer words.');
+                return;
+            }
+
+            // Load custom fonts if provided
+            customTitleFontLoaded = false;
+            customSubtitleFontLoaded = false;
+
+            const fontPromises = [];
+
+            if (customTitleFontFile && titleFontFamily === 'CustomTitle') {
+                const titleFontPromise = loadCustomFont(customTitleFontFile, 'CustomTitle').then(() => {
+                    customTitleFontLoaded = true;
+                });
+                fontPromises.push(titleFontPromise);
+            }
+
+            if (customSubtitleFontFile && subtitleFontFamily === 'CustomSubtitle') {
+                const subtitleFontPromise = loadCustomFont(customSubtitleFontFile, 'CustomSubtitle').then(() => {
+                    customSubtitleFontLoaded = true;
+                });
+                fontPromises.push(subtitleFontPromise);
+            }
+
+            // Wait for fonts to load
+            await Promise.all(fontPromises);
+
+            currentPuzzle = { 
+                grid, 
+                words, 
+                title, 
+                rows, 
+                cols,
+                titleFontSize,
+                subtitleFontSize,
+                titleFontFamily,
+                subtitleFontFamily,
+                bgOpacity,
+                wordColumnGap,
+                wordRowGap
+            };
+
+            // Load background image if provided
+            if (bgImageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        backgroundImage = img;
+                        drawPuzzleToCanvas();
+                        document.getElementById('previewSection').classList.remove('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(bgImageFile);
+            } else {
+                backgroundImage = null;
+                drawPuzzleToCanvas();
+                document.getElementById('previewSection').classList.remove('hidden');
+            }
+        }
+
+        async function loadCustomFont(fontFile, fontName) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const fontData = e.target.result;
+                        const font = new FontFace(fontName, fontData);
+                        await font.load();
+                        document.fonts.add(font);
+                        resolve();
+                    } catch (error) {
+                        console.error('Error loading font:', error);
+                        showMessage('Error loading custom font. Using default font.', 'error');
+                        resolve(); // Continue anyway with default font
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(fontFile);
+            });
+        }
+
+        function createWordSearchGrid(words, rows, cols) {
+            const grid = Array(rows).fill(null).map(() => Array(cols).fill(''));
+            const directions = [
+                [0, 1],   // horizontal
+                [1, 0],   // vertical
+                [1, 1],   // diagonal down-right
+                [-1, 1],  // diagonal up-right
+            ];
+
+            wordPositions = [];
+            const shuffledWords = [...words].sort(() => Math.random() - 0.5);
+
+            for (let word of shuffledWords) {
+                let placed = false;
+                let attempts = 0;
+                const maxAttempts = 100;
+
+                while (!placed && attempts < maxAttempts) {
+                    attempts++;
+                    const direction = directions[Math.floor(Math.random() * directions.length)];
+                    const row = Math.floor(Math.random() * rows);
+                    const col = Math.floor(Math.random() * cols);
+
+                    if (canPlaceWord(grid, word, row, col, direction, rows, cols)) {
+                        placeWord(grid, word, row, col, direction);
+                        wordPositions.push({
+                            word: word,
+                            startRow: row,
+                            startCol: col,
+                            direction: direction
+                        });
+                        placed = true;
+                    }
+                }
+
+                if (!placed) {
+                    return null;
+                }
+            }
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === '') {
+                        grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+                }
+            }
+
+            return grid;
+        }
+
+        function canPlaceWord(grid, word, row, col, direction, rows, cols) {
+            const [dr, dc] = direction;
+            const endRow = row + dr * (word.length - 1);
+            const endCol = col + dc * (word.length - 1);
+
+            if (endRow < 0 || endRow >= rows || endCol < 0 || endCol >= cols) {
+                return false;
+            }
+
+            for (let i = 0; i < word.length; i++) {
+                const r = row + dr * i;
+                const c = col + dc * i;
+                if (grid[r][c] !== '' && grid[r][c] !== word[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function placeWord(grid, word, row, col, direction) {
+            const [dr, dc] = direction;
+            for (let i = 0; i < word.length; i++) {
+                grid[row + dr * i][col + dc * i] = word[i];
+            }
+        }
+
+        function getOptimalColumns(wordCount) {
+            if (wordCount <= 3) return wordCount;
+            if (wordCount <= 8) return 2;
+            if (wordCount <= 12) return 3;
+            if (wordCount <= 20) return 4;
+            return 5;
+        }
+
+        function drawPuzzleToCanvas() {
+            const pageSize = document.getElementById('pageSize').value;
+            const dimensions = pageSize === 'letter' 
+                ? { width: 8.5 * 96, height: 11 * 96 }
+                : { width: 6 * 96, height: 9 * 96 };
+
+            // Draw puzzle
+            drawCanvas('puzzleCanvas', false, dimensions);
+            
+            // Draw solution
+            drawCanvas('solutionCanvas', true, dimensions);
+        }
+
+        function drawCanvas(canvasId, isSolution, dimensions) {
+            const canvas = document.getElementById(canvasId);
+            canvas.width = dimensions.width;
+            canvas.height = dimensions.height;
+            const ctx = canvas.getContext('2d');
+
+            // Fill background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background image if provided
+            if (backgroundImage) {
+                const bgOpacity = currentPuzzle.bgOpacity || 0.15;
+                ctx.globalAlpha = bgOpacity;
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = 1.0;
+            }
+
+            const padding = 30;
+            const cellSize = 32;
+            const gap = 4;
+
+            // Get font settings from puzzle
+            const titleFontSize = currentPuzzle.titleFontSize || 34;
+            const subtitleFontSize = currentPuzzle.subtitleFontSize || 24;
+            const titleFontFamily = currentPuzzle.titleFontFamily || 'Arial';
+            const subtitleFontFamily = currentPuzzle.subtitleFontFamily || 'Arial';
+
+            // Calculate total content height with better spacing
+            const topMargin = 60; // Breathing room at top
+            const titleHeight = titleFontSize;
+            const titleToGridSpace = 50; // Space between title and grid
+            const gridWidth = currentPuzzle.cols * cellSize + (currentPuzzle.cols - 1) * gap;
+            const gridHeight = currentPuzzle.rows * cellSize + (currentPuzzle.rows - 1) * gap;
+            const gridBoxHeight = gridHeight + 30; // Including padding
+            const gridToWordSpace = 60; // Space between grid and word list
+            const columnsPerRow = getOptimalColumns(currentPuzzle.words.length);
+            const wordRows = Math.ceil(currentPuzzle.words.length / columnsPerRow);
+            const wordBoxHeight = 42;
+            const wordHeaderHeight = subtitleFontSize;
+            const wordHeaderToBoxSpace = 35;
+            const customWordRowGap = currentPuzzle.wordRowGap || 10;
+            const wordListTotalHeight = wordHeaderHeight + wordHeaderToBoxSpace + (wordRows * (wordBoxHeight + customWordRowGap));
+            const bottomMargin = 60; // Breathing room at bottom
+            
+            const totalContentHeight = titleHeight + titleToGridSpace + gridBoxHeight + gridToWordSpace + wordListTotalHeight;
+            const availableSpace = canvas.height - topMargin - bottomMargin;
+            
+            // Center vertically if there's space, otherwise use minimum margins
+            let topOffset;
+            if (totalContentHeight <= availableSpace) {
+                topOffset = topMargin + (availableSpace - totalContentHeight) / 2;
+            } else {
+                topOffset = topMargin;
+            }
+
+            // Draw title with custom font
+            ctx.fillStyle = '#000000';
+            ctx.font = `bold ${titleFontSize}px ${titleFontFamily}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const titleText = isSolution ? `${currentPuzzle.title} - SOLUTION` : currentPuzzle.title;
+            ctx.fillText(titleText, canvas.width / 2, topOffset);
+
+            // Calculate grid position - centered horizontally and vertically balanced
+            const startX = (canvas.width - gridWidth) / 2;
+            const startY = topOffset + titleHeight + titleToGridSpace;
+
+            // Draw grid border
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(startX - 15, startY - 15, gridWidth + 30, gridHeight + 30);
+
+            // Create solution position set
+            const solutionPositions = new Set();
+            if (isSolution) {
+                wordPositions.forEach(pos => {
+                    const [dr, dc] = pos.direction;
+                    for (let i = 0; i < pos.word.length; i++) {
+                        const r = pos.startRow + dr * i;
+                        const c = pos.startCol + dc * i;
+                        solutionPositions.add(`${r}-${c}`);
+                    }
+                });
+            }
+
+            // Draw letters
+            ctx.font = 'bold 18px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Define colors for word highlights
+            const wordColors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B500'];
+
+            // First pass: draw circles for solution
+            if (isSolution) {
+                wordPositions.forEach((pos, wordIndex) => {
+                    const [dr, dc] = pos.direction;
+                    const color = wordColors[wordIndex % wordColors.length];
+                    
+                    for (let i = 0; i < pos.word.length; i++) {
+                        const r = pos.startRow + dr * i;
+                        const c = pos.startCol + dc * i;
+                        const x = startX + c * (cellSize + gap) + cellSize / 2;
+                        const y = startY + r * (cellSize + gap) + cellSize / 2;
+                        
+                        // Draw colored circle
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = 0.4;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 14, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
+                });
+            }
+
+            // Second pass: draw letters
+            for (let i = 0; i < currentPuzzle.rows; i++) {
+                for (let j = 0; j < currentPuzzle.cols; j++) {
+                    const x = startX + j * (cellSize + gap) + cellSize / 2;
+                    const y = startY + i * (cellSize + gap) + cellSize / 2;
+                    
+                    if (isSolution && solutionPositions.has(`${i}-${j}`)) {
+                        ctx.font = 'bold 22px "Courier New", monospace';
+                        ctx.fillStyle = '#000000';
+                    } else if (isSolution) {
+                        ctx.font = 'normal 18px "Courier New", monospace';
+                        ctx.fillStyle = '#cccccc';
+                    } else {
+                        ctx.font = 'bold 18px "Courier New", monospace';
+                        ctx.fillStyle = '#000000';
+                    }
+                    
+                    ctx.fillText(currentPuzzle.grid[i][j], x, y);
+                }
+            }
+
+            // Draw word list with balanced spacing
+            const wordListY = startY + gridHeight + gridToWordSpace;
+            ctx.font = `bold ${subtitleFontSize}px ${subtitleFontFamily}`;
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            const headerText = isSolution ? 'Word Locations:' : 'Find These Words:';
+            ctx.fillText(headerText, canvas.width / 2, wordListY);
+
+            // Draw words in grid - perfectly centered
+            const wordBoxWidth = 175;
+            const wordColumnGap = currentPuzzle.wordColumnGap || 18;
+            const wordRowGap = currentPuzzle.wordRowGap || 10;
+            const totalWidth = columnsPerRow * wordBoxWidth + (columnsPerRow - 1) * wordColumnGap;
+            const wordsStartX = (canvas.width - totalWidth) / 2;
+            const wordsStartY = wordListY + wordHeaderToBoxSpace;
+
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+
+            currentPuzzle.words.forEach((word, index) => {
+                const row = Math.floor(index / columnsPerRow);
+                const col = index % columnsPerRow;
+                const x = wordsStartX + col * (wordBoxWidth + wordColumnGap) + wordBoxWidth / 2;
+                const y = wordsStartY + row * (wordBoxHeight + wordRowGap) + wordBoxHeight / 2;
+
+                // Draw word background
+                ctx.fillStyle = '#f8f8f8';
+                ctx.beginPath();
+                ctx.roundRect(x - wordBoxWidth / 2, y - wordBoxHeight / 2, wordBoxWidth, wordBoxHeight, 20);
+                ctx.fill();
+
+                // Draw word text
+                ctx.fillStyle = '#000000';
+                ctx.fillText(word, x, y + 2);
+            });
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pageSize = document.getElementById('pageSize').value;
+            
+            const dimensions = pageSize === 'letter' 
+                ? { width: 8.5 * 72, height: 11 * 72 }
+                : { width: 6 * 72, height: 9 * 72 };
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: [dimensions.width, dimensions.height]
+            });
+
+            // Add puzzle page
+            const puzzleCanvas = document.getElementById('puzzleCanvas');
+            const puzzleImg = puzzleCanvas.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(puzzleImg, 'JPEG', 0, 0, dimensions.width, dimensions.height);
+
+            // Add solution page
+            pdf.addPage();
+            const solutionCanvas = document.getElementById('solutionCanvas');
+            const solutionImg = solutionCanvas.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(solutionImg, 'JPEG', 0, 0, dimensions.width, dimensions.height);
+
+            pdf.save(`${currentPuzzle.title.replace(/\s+/g, '_')}_WordSearch.pdf`);
+            showMessage('PDF downloaded successfully!', 'success');
+        }
+
+        function downloadJPEG() {
+            // Download puzzle
+            const puzzleCanvas = document.getElementById('puzzleCanvas');
+            puzzleCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${currentPuzzle.title.replace(/\s+/g, '_')}_WordSearch_Puzzle.jpg`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }, 'image/jpeg', 0.95);
+
+            // Download solution
+            setTimeout(() => {
+                const solutionCanvas = document.getElementById('solutionCanvas');
+                solutionCanvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentPuzzle.title.replace(/\s+/g, '_')}_WordSearch_Solution.jpg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showMessage('JPEGs downloaded successfully!', 'success');
+                }, 'image/jpeg', 0.95);
+            }, 500);
+        }
+    </script>
+</body>
+</html>
